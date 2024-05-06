@@ -34,7 +34,9 @@ namespace Models
         public string MachineAddCode { get; set; } = string.Empty; //機台ID
         public string MachineType { get; set; } = string.Empty; // 機台種類
         public string ModelSeries { get; set; } = string.Empty; // 型號系列
-        public string MachineModel { get; set; } = string.Empty; // 機台型號
+        public string MachineName { get; set; } = string.Empty; // 機台名稱
+
+        public string MachineImage { get; set; } = string.Empty; //機台圖片路徑
         public int MachineDeviceId { get; set; } //機台設備流水號
     }
 
@@ -46,10 +48,11 @@ namespace Models
         public int MachineAddId { get; set; } // 新增機台ID
         public int CompanyId { get; set; } //公司流水號
         public short Deleted { get; set; } // 是否被刪除
-        public string MachineAddCode { get; set; } = string.Empty; //機台ID
         public string MachineType { get; set; } = string.Empty; // 機台種類
         public string ModelSeries { get; set; } = string.Empty; // 型號系列
-        public string MachineModel { get; set; } = string.Empty; // 機台型號
+        public string MachineName { get; set; } = string.Empty; // 機台名稱
+        public string? MachineImage { get; set; } = string.Empty; //機台圖片路徑
+        public bool IsDeletedMachineImage { get; set; } = false; //是否被刪除機台圖片
     }
 
     /// <summary>
@@ -59,10 +62,12 @@ namespace Models
     {
         public int MachineAddId { get; set; } //機台流水號
         public short? Deleted { get; set; } //刪除
-        public string MachineAddCode { get; set; } = string.Empty; //機台ID
         public string MachineType { get; set; } = string.Empty; // 機台種類
         public string ModelSeries { get; set; } = string.Empty; // 型號系列
-        public string MachineModel { get; set; } = string.Empty; // 機台型號
+        public string MachineName { get; set; } = string.Empty; // 機台名稱
+        public string? MachineImage { get; set; } = string.Empty; //機台圖片路徑
+        public IFormFile? MachineImageObj { get; set; } //機台圖片
+        public bool IsDeletedMachineImage { get; set; } = false; //是否被刪除機台圖片
     }
 
 }
