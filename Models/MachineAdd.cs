@@ -31,13 +31,11 @@ namespace Models
     public class MachineAddOverview
     {
         public int MachineAddId { get; set; } //機台流水號
-        public string MachineAddCode { get; set; } = string.Empty; //機台ID
         public string MachineType { get; set; } = string.Empty; // 機台種類
         public string ModelSeries { get; set; } = string.Empty; // 型號系列
         public string MachineName { get; set; } = string.Empty; // 機台名稱
 
         public string MachineImage { get; set; } = string.Empty; //機台圖片路徑
-        public int MachineDeviceId { get; set; } //機台設備流水號
     }
 
     /// <summary>
