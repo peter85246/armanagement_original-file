@@ -33,35 +33,32 @@ namespace ARManagement.Controllers
         [HttpPost]
         public async Task<ActionResult<ApiResult<List<MachineAddOverview>>>> MachineAddOverview(PostMachineAddFilter post)
         {
-            ApiResult<List<MachineAddOverview>> apiResult = new ApiResult<List<MachineAddOverview>>(); /*jwtToken.Token*/
+            ApiResult<List<MachineAddOverview>> apiResult = new ApiResult<List<MachineAddOverview>>(jwtToken.Token);
 
             try
             {
                 #region 判斷Token是否過期或無效
-                //if (tokenExpired)
-                //{
-                //    apiResult.Code = "1001"; //Token過期或無效
-                //    apiResult.Message = _responseCodeHelper.GetResponseCodeString(apiResult.Code);
-                //    return Ok(apiResult);
-                //}
+                if (tokenExpired)
+                {
+                    apiResult.Code = "1001"; //Token過期或無效
+                    apiResult.Message = _responseCodeHelper.GetResponseCodeString(apiResult.Code);
+                    return Ok(apiResult);
+                }
                 #endregion
 
                 //var sql = $@"
                 //            SELECT 
                 //                m.*,
                 //                md.""MachineDeviceId""
-                //            FROM public.""MachineAdd"" m
-                //            JOIN public.""MachineDevice"" md ON m.""MachineAddId"" = md.""MachineAddId"" AND md.""Deleted"" = 0
+                //            FROM public.""Machine"" m
+                //            JOIN public.""MachineDevice"" md ON m.""MachineId"" = md.""MachineId"" AND md.""Deleted"" = 0
                 //            WHERE m.""CompanyId"" = @CompanyId AND m.""Deleted"" = 0
                 //        ";
-
                 var sql = $@"
                             SELECT 
                                 m.""MachineAddId"", m.""MachineType"", m.""ModelSeries"", m.""MachineName""
                             FROM public.""MachineAdd"" m
                             WHERE m.""CompanyId"" = @CompanyId AND m.""Deleted"" = 0";
-
-
 
                 if (!string.IsNullOrEmpty(post.Keyword))
                 {
@@ -70,8 +67,8 @@ namespace ARManagement.Controllers
 
                 sql += $@" ORDER BY m.""MachineAddId"" ASC";
 
-                List<MachineAddOverview> machineAddOverview = await _baseRepository.GetAllAsync<MachineAddOverview>(sql, new { Keyword = post.Keyword, CompanyId = CompanyId });
-                foreach (var item in machineAddOverview)
+                List<MachineAddOverview> machineOverview = await _baseRepository.GetAllAsync<MachineAddOverview>(sql, new { Keyword = post.Keyword, CompanyId = CompanyId });
+                foreach (var item in machineOverview)
                 {
                     if (!string.IsNullOrEmpty(item.MachineImage))
                     {
@@ -81,7 +78,7 @@ namespace ARManagement.Controllers
 
                 apiResult.Code = "0000";
                 apiResult.Message = _responseCodeHelper.GetResponseCodeString(apiResult.Code);
-                apiResult.Result = machineAddOverview;
+                apiResult.Result = machineOverview;
             }
             catch (Exception ex)
             {
@@ -101,17 +98,17 @@ namespace ARManagement.Controllers
         [HttpPost]
         public async Task<ActionResult<ApiResult<MachineAddInfo>>> GetOneMachineAdd(MachineAddPrimary post)
         {
-            ApiResult<MachineAddInfo> apiResult = new ApiResult<MachineAddInfo>(); /*jwtToken.Token*/
+            ApiResult<MachineAddInfo> apiResult = new ApiResult<MachineAddInfo>(jwtToken.Token);
 
             try
             {
                 #region 判斷Token是否過期或無效
-                //if (tokenExpired)
-                //{
-                //    apiResult.Code = "1001"; //Token過期或無效
-                //    apiResult.Message = _responseCodeHelper.GetResponseCodeString(apiResult.Code);
-                //    return Ok(apiResult);
-                //}
+                if (tokenExpired)
+                {
+                    apiResult.Code = "1001"; //Token過期或無效
+                    apiResult.Message = _responseCodeHelper.GetResponseCodeString(apiResult.Code);
+                    return Ok(apiResult);
+                }
                 #endregion
 
                 #region 機台是否存在
@@ -135,7 +132,7 @@ namespace ARManagement.Controllers
 
                 if (!string.IsNullOrEmpty(machineInfo.MachineImage))
                 {
-                    machineInfo.MachineImage = $"{baseURL}upload/machineAdd/{machineInfo.MachineAddId}/{machineInfo.MachineImage}";
+                    machineInfo.MachineImage = $"{baseURL}upload/machine/{machineInfo.MachineAddId}/{machineInfo.MachineImage}";
                 }
 
                 apiResult.Code = "0000";
@@ -157,54 +154,65 @@ namespace ARManagement.Controllers
         /// 28. 取得單一一筆機台(For 眼鏡，透過MachineCode)
         /// </summary>
         /// <returns></returns>
-        [HttpPost]
-        public async Task<ActionResult<ApiResult<MachineAddInfo>>> GetOneMachineByMachineAddCode(PostMachineAddCode post)
-        {
-            ApiResult<MachineAddInfo> apiResult = new ApiResult<MachineAddInfo>(); /*jwtToken.Token*/
+        //[HttpPost]
+        //public async Task<ActionResult<ApiResult<MachineInfo>>> GetOneMachineByMachineCode(PostMachineCode post)
+        //{
+        //    ApiResult<MachineInfo> apiResult = new ApiResult<MachineInfo>(jwtToken.Token);
 
-            try
-            {
-                #region 判斷Token是否過期或無效
-                //if (tokenExpired)
-                //{
-                //    apiResult.Code = "1001"; //Token過期或無效
-                //    apiResult.Message = _responseCodeHelper.GetResponseCodeString(apiResult.Code);
-                //    return Ok(apiResult);
-                //}
-                #endregion
+        //    try
+        //    {
+        //        #region 判斷Token是否過期或無效
+        //        if (tokenExpired)
+        //        {
+        //            apiResult.Code = "1001"; //Token過期或無效
+        //            apiResult.Message = _responseCodeHelper.GetResponseCodeString(apiResult.Code);
+        //            return Ok(apiResult);
+        //        }
+        //        #endregion
 
-                #region 機台是否存在
-                var machineInfo = await _baseRepository.GetOneAsync<MachineAddInfo>("MachineAdd");
+        //        #region 機台是否存在
+        //        string conditionSQL = $@"""MachineCode"" = @MachineCode";
+        //        var machineInfo = await _baseRepository.GetOneAsync<MachineInfo>("Machine", conditionSQL, new { MachineCode = post.MachineCode });
 
-                if (machineInfo == null)
-                {
-                    apiResult.Code = "4001"; //資料庫或是實體檔案不存在
-                    apiResult.Message = _responseCodeHelper.GetResponseCodeString(apiResult.Code);
-                    return Ok(apiResult);
-                }
+        //        if (machineInfo == null)
+        //        {
+        //            apiResult.Code = "4001"; //資料庫或是實體檔案不存在
+        //            apiResult.Message = _responseCodeHelper.GetResponseCodeString(apiResult.Code);
+        //            return Ok(apiResult);
+        //        }
 
-                if (machineInfo.Deleted == (byte)DeletedDataEnum.True)
-                {
-                    apiResult.Code = "4002"; //此資料已被刪除
-                    apiResult.Message = _responseCodeHelper.GetResponseCodeString(apiResult.Code);
-                    return Ok(apiResult);
-                }
-                #endregion
+        //        if (machineInfo.Deleted == (byte)DeletedDataEnum.True)
+        //        {
+        //            apiResult.Code = "4002"; //此資料已被刪除
+        //            apiResult.Message = _responseCodeHelper.GetResponseCodeString(apiResult.Code);
+        //            return Ok(apiResult);
+        //        }
+        //        #endregion
 
-                apiResult.Code = "0000";
-                apiResult.Message = _responseCodeHelper.GetResponseCodeString(apiResult.Code);
-                apiResult.Result = machineInfo;
-            }
-            catch (Exception ex)
-            {
-                apiResult.Code = "9999";
-                apiResult.Message = _responseCodeHelper.GetResponseCodeString(apiResult.Code);
-                exceptionMsg = ex.ToString();
-                stackTrace = new StackTrace(ex);
-            }
+        //        if (!string.IsNullOrEmpty(machineInfo.MachineImage))
+        //        {
+        //            machineInfo.MachineImage = $"{baseURL}upload/machine/{machineInfo.MachineId}/{machineInfo.MachineImage}";
+        //        }
 
-            return Ok(apiResult);
-        }
+        //        if (!string.IsNullOrEmpty(machineInfo.MachineFile))
+        //        {
+        //            machineInfo.MachineFile = $"{baseURL}upload/machine/{machineInfo.MachineId}/{machineInfo.MachineFile}";
+        //        }
+
+        //        apiResult.Code = "0000";
+        //        apiResult.Message = _responseCodeHelper.GetResponseCodeString(apiResult.Code);
+        //        apiResult.Result = machineInfo;
+        //    }
+        //    catch (Exception ex)
+        //    {
+        //        apiResult.Code = "9999";
+        //        apiResult.Message = _responseCodeHelper.GetResponseCodeString(apiResult.Code);
+        //        exceptionMsg = ex.ToString();
+        //        stackTrace = new StackTrace(ex);
+        //    }
+
+        //    return Ok(apiResult);
+        //}
 
 
         /// <summary>
@@ -218,37 +226,37 @@ namespace ARManagement.Controllers
         [HttpPut]
         public async Task<ActionResult<ApiResult<string>>> MachineAddInfo([FromForm] MachineAddInfo post)
         {
-            ApiResult<string> apiResult = new ApiResult<string>(); /*jwtToken.Token*/
+            ApiResult<string> apiResult = new ApiResult<string>(jwtToken.Token);
 
             try
             {
                 #region 判斷Token是否過期或無效
-                //if (tokenExpired)
-                //{
-                //    apiResult.Code = "1001"; //Token過期或無效
-                //    apiResult.Message = _responseCodeHelper.GetResponseCodeString(apiResult.Code);
-                //    return Ok(apiResult);
-                //}
+                if (tokenExpired)
+                {
+                    apiResult.Code = "1001"; //Token過期或無效
+                    apiResult.Message = _responseCodeHelper.GetResponseCodeString(apiResult.Code);
+                    return Ok(apiResult);
+                }
                 #endregion
 
                 #region 欄位驗證
-                //if (string.IsNullOrEmpty(post.MachineType) ||
-                //    string.IsNullOrEmpty(post.ModelSeries) ||
-                //    string.IsNullOrEmpty(post.MachineName))
-                //{
-                //    apiResult.Code = "2003"; //有必填欄位尚未填寫
-                //    apiResult.Message = _responseCodeHelper.GetResponseCodeString(apiResult.Code);
-                //    return Ok(apiResult);
-                //}
+                if (string.IsNullOrEmpty(post.MachineType) ||
+                    string.IsNullOrEmpty(post.ModelSeries) ||
+                    string.IsNullOrEmpty(post.MachineName))
+                {
+                    apiResult.Code = "2003"; //有必填欄位尚未填寫
+                    apiResult.Message = _responseCodeHelper.GetResponseCodeString(apiResult.Code);
+                    return Ok(apiResult);
+                }
 
-                //if (post.MachineType.Length > 100 || 
-                //    post.ModelSeries.Length > 100 ||
-                //    post.MachineName.Length > 100)
-                //{
-                //    apiResult.Code = "2005"; //輸入文字字數不符合長度規範
-                //    apiResult.Message = _responseCodeHelper.GetResponseCodeString(apiResult.Code);
-                //    return Ok(apiResult);
-                //}
+                if (post.MachineType.Length > 100 ||
+                    post.ModelSeries.Length > 100 ||
+                    post.MachineName.Length > 100)
+                {
+                    apiResult.Code = "2005"; //輸入文字字數不符合長度規範
+                    apiResult.Message = _responseCodeHelper.GetResponseCodeString(apiResult.Code);
+                    return Ok(apiResult);
+                }
                 #endregion
 
                 #region 機台是否存在
@@ -275,16 +283,17 @@ namespace ARManagement.Controllers
                 }
                 #endregion
 
-                //需檢查MachineAddCode有沒有重複
+                //需檢查MachineCode有沒有重複
                 MachineAdd machineinfoRepeat = new MachineAdd();
-                var conditionSQL = $@"""Deleted"" = 0 AND ""CompanyId"" = @CompanyId";
+                //var conditionSQL = $@"""Deleted"" = 0 AND ""CompanyId"" = @CompanyId AND ""MachineCode"" = @MachineCode";
+                var conditionSQL = $@"""Deleted"" = 0 AND ""CompanyId"" = @CompanyId AND ""MachineAddId"" = @MachineAddId";
 
                 if (post.MachineAddId != 0)
                 {
                     conditionSQL += " AND \"MachineAddId\" != @MachineAddId";
                 }
 
-                machineinfoRepeat = await _baseRepository.GetOneAsync<MachineAdd>("MachineAdd", conditionSQL, new { CompanyId = CompanyId,  MachineAddId = post.MachineAddId });
+                machineinfoRepeat = await _baseRepository.GetOneAsync<MachineAdd>("MachineAdd", conditionSQL, new { CompanyId = CompanyId, MachineAddId = post.MachineAddId });
 
                 if (machineinfoRepeat != null) //代表有重複
                 {
@@ -310,8 +319,8 @@ namespace ARManagement.Controllers
                     ImageName = response;
                 }
 
-                //判斷machineAdd資料夾是否存在
-                DirectoryInfo directoryInfo = new DirectoryInfo(Path.Combine(_savePath, "machineAdd"));
+                //判斷machine資料夾是否存在
+                DirectoryInfo directoryInfo = new DirectoryInfo(Path.Combine(_savePath, "machine"));
                 if (!directoryInfo.Exists)
                 {
                     directoryInfo.Create();
@@ -328,21 +337,11 @@ namespace ARManagement.Controllers
                         { "@ModelSeries", post.ModelSeries},
                         { "@MachineName", post.MachineName},
                         { "@MachineImage", ImageName},
-                        //{ "@Creator", myUser.UserId},
-                        { "@Creator", 1},
+                        { "@Creator", myUser.UserId},
                     };
 
                     MachineAddId = await _baseRepository.AddOneByCustomTable(addMachine_Dict, "MachineAdd", "MachineAddId");
-                    apiResult.Result = MachineAddId.ToString(); // 确保返回 MachineAddId
 
-                    //Dictionary<string, object> addMachineDevice_Dict = new Dictionary<string, object>()
-                    //{
-                    //    { "@MachineAddId", MachineAddId},
-                    //    //{ "@Creator", myUser.UserId},
-                    //    { "@Creator", 1},
-                    //};
-
-                    //await _baseRepository.AddOneByCustomTable(addMachineDevice_Dict, "MachineDevice", "MachineDeviceId");
                 }
                 else //編輯
                 {
@@ -353,8 +352,7 @@ namespace ARManagement.Controllers
                         { "@MachineType", post.MachineType},
                         { "@ModelSeries", post.ModelSeries},
                         { "@MachineName", post.MachineName},
-                        //{ "@Updater", myUser.UserId},
-                        { "@Updater", 1},
+                        { "@Updater", myUser.UserId},
                         { "@UpdateTime", DateTime.Now}
                     };
 
@@ -375,13 +373,16 @@ namespace ARManagement.Controllers
                     MachineAddId = post.MachineAddId;
                 }
 
-                var fullPath = Path.Combine(_savePath, "machineAdd", MachineAddId.ToString()); //根目錄
+                var fullPath = Path.Combine(_savePath, "machine", MachineAddId.ToString()); //根目錄
                 if ((bool)post.IsDeletedMachineImage && !string.IsNullOrEmpty(machineinfo.MachineImage)) //刪除之前的圖片
+                {
+                    folderFunction.DeleteFile(Path.Combine(fullPath, machineinfo.MachineImage));
+                }
 
                 if (!string.IsNullOrEmpty(ImageName)) //新增圖片
                 {
                     folderFunction.SavePathFile(post.MachineImageObj, fullPath, ImageName);
-                 }
+                }
 
                 apiResult.Code = "0000";
                 apiResult.Message = _responseCodeHelper.GetResponseCodeString(apiResult.Code);
@@ -410,12 +411,12 @@ namespace ARManagement.Controllers
             try
             {
                 #region 判斷Token是否過期或無效
-                //if (tokenExpired)
-                //{
-                //    apiResult.Code = "1001"; //Token過期或無效
-                //    apiResult.Message = _responseCodeHelper.GetResponseCodeString(apiResult.Code);
-                //    return Ok(apiResult);
-                //}
+                if (tokenExpired)
+                {
+                    apiResult.Code = "1001"; //Token過期或無效
+                    apiResult.Message = _responseCodeHelper.GetResponseCodeString(apiResult.Code);
+                    return Ok(apiResult);
+                }
                 #endregion
 
                 #region 機台是否存在
@@ -437,14 +438,14 @@ namespace ARManagement.Controllers
                 }
                 #endregion
 
-                #region 刪掉Machine表
+                #region 刪掉MachineAdd表
                 await _baseRepository.DeleteOne(machineInfo.MachineAddId, "MachineAdd", "\"MachineAddId\"", myUser.UserId);
                 #endregion
 
                 var machineWhere = $@"""MachineAddId"" = @MachineAddId";
 
-                #region 刪掉Machine底下所有子資料夾、檔案
-                var machinePath = Path.Combine(_savePath, "machineAdd", machineInfo.MachineAddId.ToString());
+                #region 刪掉MachineAdd底下所有子資料夾、檔案
+                var machinePath = Path.Combine(_savePath, "machine", machineInfo.MachineAddId.ToString());
 
                 DirectoryInfo directoryInfo = new DirectoryInfo(machinePath);
                 if (directoryInfo.Exists)
