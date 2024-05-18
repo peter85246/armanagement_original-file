@@ -47,6 +47,11 @@ namespace Models
         public int MachineAddId { get; set; } //機台流水號
     }
 
+    [BindNever]
+    public class PostKnowledgeinfoFilter
+    {
+        public string Keyword { get; set; } = string.Empty; //關鍵字
+    }
 
     /// <summary>
     /// 儲存故障流程
